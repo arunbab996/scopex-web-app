@@ -310,7 +310,7 @@ const payeesList = [
 
 const fundingSourcesList = [
   { id: 'wallet', name: 'ScopeX Wallet', balance: '€ 2405', icon: '💳', color: 'bg-blue-50 text-[#0026FF]' },
-  { id: 'n26', name: 'N26', balance: '€ 1240', img: '/26.png', color: 'bg-white border border-gray-100' },
+  { id: 'n26', name: 'N26', balance: '€ 1240', img: '/n26.png', color: 'bg-white border border-gray-100' },
   { id: 'db', name: 'Deutsche Bank', balance: '€ 8500', img: '/deutsche.png', color: 'bg-white border border-gray-100' }
 ];
 
