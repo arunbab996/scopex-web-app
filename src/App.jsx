@@ -128,7 +128,7 @@ const NavIcons = {
 
 const SidebarIcons = {
   Chat: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
-  Gear: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+  Gear: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
   Doc: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
 };
 
@@ -161,17 +161,40 @@ const SplashScreen = () => (
     </div>
 );
 
-// --- STRICT NATIVE APP WRAPPER (CENTERED) ---
+// --- STRICT NATIVE APP WRAPPER (CENTERED & AUTO-SCALING) ---
 const AppFrame = ({ children, currentScreen, setScreen, isMenuOpen, setIsMenuOpen, overlayActive, isSplash }) => {
   const showFooter = !isSplash && currentScreen !== 'onboarding' && currentScreen !== 'send';
   
+  // Calculate dynamic scale to ensure phone frame always fits perfectly on laptops
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        // 852px phone height + 28px border = 880px total expected height
+        // Scale it down to fit 95% of the user's viewport height for clean margins
+        const availableHeight = window.innerHeight * 0.95;
+        const newScale = Math.min(1, availableHeight / 880);
+        setScale(newScale);
+      } else {
+        setScale(1); // Standard scale on native mobile phones
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
       <style>{styles}</style>
       <div className="fixed inset-0 w-full bg-[#e2e8f0] md:flex md:items-center md:justify-center font-sans select-none overflow-hidden">
         
-        {/* MOBILE DEVICE CONTAINER - Background base set to black to fix outer ring/halo issues */}
-        <div className="w-full h-full md:h-[852px] md:w-[393px] md:border-[14px] md:border-black md:rounded-[50px] md:shadow-2xl bg-black relative overflow-hidden flex flex-col transform translate-x-0 shrink-0">
+        {/* MOBILE DEVICE CONTAINER */}
+        <div 
+            className="w-full h-full md:h-[852px] md:w-[393px] md:border-[14px] md:border-black md:rounded-[50px] md:shadow-2xl bg-black relative overflow-hidden flex flex-col shrink-0"
+            style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
+        >
           
           {/* STATIC STATUS BAR */}
           <div className={`absolute top-0 w-full h-[47px] z-[250] pointer-events-none flex items-end justify-between px-8 pb-[10px] transition-colors duration-300 ${isSplash ? 'text-white' : 'text-black'}`}>
@@ -287,7 +310,7 @@ const payeesList = [
 
 const fundingSourcesList = [
   { id: 'wallet', name: 'ScopeX Wallet', balance: '€ 2405', icon: '💳', color: 'bg-blue-50 text-[#0026FF]' },
-  { id: 'n26', name: 'N26', balance: '€ 1240', img: '/n26.png', color: 'bg-white border border-gray-100' },
+  { id: 'n26', name: 'N26', balance: '€ 1240', img: '/26.png', color: 'bg-white border border-gray-100' },
   { id: 'db', name: 'Deutsche Bank', balance: '€ 8500', img: '/deutsche.png', color: 'bg-white border border-gray-100' }
 ];
 
@@ -370,7 +393,7 @@ const HomeScreen = ({ onMenuOpen, setScreen, setGlobalSendAmount }) => {
           </div>
 
           {/* FEATURE DISCOVERY BANNER (With Bright Neon Pulse) */}
-          <div className="px-5 mt-5 relative z-20">
+          <div className="px-5 mt-5 mb-4 relative z-20">
               <div onClick={() => setScreen('transfers')} className={`bg-white border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all duration-300 ${showNeon ? 'animate-neon-pulse border-[#0026FF]' : 'border-blue-100 shadow-[0_4px_15px_rgba(0,38,255,0.06)] hover:shadow-[0_6px_20px_rgba(0,38,255,0.12)]'}`}>
                   <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-xl shadow-inner border border-blue-100">🗓️</div>
@@ -388,7 +411,7 @@ const HomeScreen = ({ onMenuOpen, setScreen, setGlobalSendAmount }) => {
               </div>
           </div>
 
-          <div className="relative z-20 mt-10">
+          <div className="relative z-20 mt-8">
             <div className="absolute left-1/2 -translate-x-1/2 -top-4 w-[75%] h-12 bg-white rounded-t-[30px] shadow-[0_-5px_15px_rgba(0,0,0,0.03)]"></div>
             <div className="bg-white rounded-t-[32px] px-6 pt-5 pb-6 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] relative min-h-[460px]">
               
